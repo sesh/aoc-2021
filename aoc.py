@@ -1,11 +1,12 @@
-def d1(depths, window=3):
+
+def d1(depths: list[str], window: int=3) -> int:
     count = 0
     for x in range(1, len(depths) - window + 1):
         count += sum(depths[x : x + window]) > sum(depths[x - 1 : x - 1 + window])
     return count
 
 
-def d2(course):
+def d2(course: list[str]) -> int:
     course = [(x.split()[0], int(x.split()[1])) for x in course]
     depth, distance = 0, 0
 
@@ -20,7 +21,7 @@ def d2(course):
     return depth * distance
 
 
-def d2_with_aim(course):
+def d2_with_aim(course: list[str]) -> int:
     course = [(x.split()[0], int(x.split()[1])) for x in course]
     aim, depth, distance = 0, 0, 0
 
