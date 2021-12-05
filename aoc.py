@@ -98,9 +98,9 @@ def d4_load_boards(input):
 
 def d4_check_if_winner(board):
     for row in board:
-        if len([x for x in row if x.endswith('*')]) == len(row):
+        if len([x for x in row if x.endswith("*")]) == len(row):
             return True
-    
+
     for i in range(len(board[0])):
         if len([row[i] for row in board if row[i].endswith("*")]) == len(board[0]):
             return True
@@ -125,7 +125,7 @@ def d4_tally_board(board):
 
 
 def d4_bingo(input):
-    draws = input[0].split(',')
+    draws = input[0].split(",")
     boards = d4_load_boards(input)
 
     for draw in draws:
@@ -139,7 +139,7 @@ def d4_bingo(input):
 
 
 def d4_bingo_last(input):
-    draws = input[0].split(',')
+    draws = input[0].split(",")
     boards = d4_load_boards(input)
 
     completed_boards = []
@@ -157,6 +157,75 @@ def d4_bingo_last(input):
                 if len(completed_boards) == len(boards):
                     total = d4_tally_board(board)
                     return total * int(draw)
+
+
+def d5_load_grid(input):
+    lines = []
+    rows = 0
+    cols = 0
+
+    for l in input:
+        start, end = l.split(" -> ", 1)
+        start = [int(x) for x in start.split(",")]
+        end = [int(x) for x in end.split(",")]
+        lines.append((start, end))
+
+        cols = max([cols, start[0], end[0]])
+        rows = max([rows, start[1], end[1]])
+
+    grid = [["."] * (cols + 1) for _ in range(rows + 1)]
+    return lines, grid
+
+
+def d5_set_point(grid, x1, y1):
+    if grid[y1][x1] == ".":
+        grid[y1][x1] = "1"
+    else:
+        grid[y1][x1] = str(int(grid[y1][x1]) + 1)
+
+
+def d5_draw_line(grid, x1, y1, x2, y2):
+    d5_set_point(grid, x2, y2)  # bit of a hack
+    while x1 != x2 or y1 != y2:
+        d5_set_point(grid, x1, y1)
+        if x1 < x2:
+            x1 += 1
+        if x1 > x2:
+            x1 -= 1
+        if y1 < y2:
+            y1 += 1
+        if y1 > y2:
+            y1 -= 1
+
+
+def d5_total_grid(grid):
+    total = 0
+    for row in grid:
+        for point in row:
+            if point not in [".", "1"]:
+                total += 1
+    return total
+
+
+def d5(input):
+    lines, grid = d5_load_grid(input)
+
+    for (x1, y1), (x2, y2) in lines:
+        if x1 == x2 or y1 == y2:
+            d5_draw_line(grid, x1, y1, x2, y2)
+
+    total = d5_total_grid(grid)
+    return total
+
+
+def d5_diagonals(input):
+    lines, grid = d5_load_grid(input)
+
+    for (x1, y1), (x2, y2) in lines:
+        d5_draw_line(grid, x1, y1, x2, y2)
+
+    total = d5_total_grid(grid)
+    return total
 
 
 if __name__ == "__main__":
@@ -191,3 +260,13 @@ if __name__ == "__main__":
     d4_2 = d4_bingo_last([x.strip() for x in open("inputs/d4.txt").readlines()])
     print("4.2:", d4_2)
     assert d4_2 == 8468
+
+    d5_1 = d5([x.strip() for x in open("inputs/d5.txt").readlines() if x.strip()])
+    print("5.1:", d5_1)
+    assert d5_1 == 6113
+
+    d5_2 = d5_diagonals(
+        [x.strip() for x in open("inputs/d5.txt").readlines() if x.strip()]
+    )
+    print("5.2:", d5_2)
+    assert d5_2 == 20373
