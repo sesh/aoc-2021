@@ -228,6 +228,64 @@ def d5_diagonals(input):
     return total
 
 
+def d6_lol(fish, days=18):
+    for day in range(0, days):
+        for i in range(len(fish)):
+            if fish[i] == 0:
+                fish[i] = 6
+                fish.append(8)
+            else:
+                fish[i] = fish[i] - 1
+    return len(fish)
+
+
+def d6(fish, days):
+    states = []
+    for i in range(0, 9):
+        states.append(fish.count(i))
+
+    for d in range(days):
+        zeros = states.pop(0)
+        states[6] += zeros
+        states.append(zeros)
+
+    return sum(states)
+
+
+def d7(positions):
+    min_fuel_used = None
+
+    for align_to in range(min(positions), max(positions)):
+        fuel_used = 0
+        for p in positions:
+            fuel_used += abs(align_to - p)
+
+            if min_fuel_used and fuel_used > min_fuel_used:
+                break
+
+        if not min_fuel_used or fuel_used < min_fuel_used:
+            min_fuel_used = fuel_used
+
+    return min_fuel_used
+
+
+def d7_2(positions):
+    min_fuel_used = None
+
+    for align_to in range(min(positions), max(positions)):
+        fuel_used = 0
+        for p in positions:
+            fuel_used += sum(range(abs(align_to - p) + 1))
+
+            if min_fuel_used and fuel_used > min_fuel_used:
+                break
+
+        if not min_fuel_used or fuel_used < min_fuel_used:
+            min_fuel_used = fuel_used
+
+    return min_fuel_used
+
+
 if __name__ == "__main__":
     d1_1 = d1([int(x) for x in open("inputs/d1.txt").readlines() if x], 1)
     print("1.1:", d1_1)  # 1553
@@ -270,3 +328,19 @@ if __name__ == "__main__":
     )
     print("5.2:", d5_2)
     assert d5_2 == 20373
+
+    d6_1 = d6([int(x) for x in open("inputs/d6.txt").read().split(",")], 80)
+    print("6.1:", d6_1)
+    assert d6_1 == 360761
+
+    d6_2 = d6([int(x) for x in open("inputs/d6.txt").read().split(",")], 256)
+    print("6.2:", d6_2)
+    assert d6_2 == 1632779838045
+
+    d7_1 = d7([int(x) for x in open("inputs/d7.txt").read().split(",")])
+    print("7.1:", d7_1)
+    assert d7_1 == 359648
+
+    d7_2 = d7_2([int(x) for x in open("inputs/d7.txt").read().split(",")])
+    print("7.2:", d7_2)
+    assert d7_2 == 100727924
