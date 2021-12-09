@@ -286,6 +286,60 @@ def d7_2(positions):
     return min_fuel_used
 
 
+def d8_1(inputs):
+    # find outputs with unique lengths
+    c = 0
+    unique_lengths = [2, 3, 4, 7]
+    for i in inputs:
+        output_values = i.split(' | ')[-1]
+        outputs = output_values.split()
+        for o in outputs:
+            if len(o) in unique_lengths:
+                c += 1
+    return c
+
+def d8_2(inputs):
+    total = 0
+    for i in inputs:
+        unique_signal_values, output_values = i.split(' | ')
+        unique_signal_values = ["".join(sorted(x)) for x in unique_signal_values.split()]
+        output_values = ["".join(sorted(x)) for x in output_values.split()]
+
+        output_numbers = {
+            1: [x for x in unique_signal_values if len(x) == 2][0],
+            7: [x for x in unique_signal_values if len(x) == 3][0],
+            4: [x for x in unique_signal_values if len(x) == 4][0],
+            8: [x for x in unique_signal_values if len(x) == 7][0],
+        }
+
+        for v in output_numbers.values():
+            unique_signal_values.remove(v)
+
+        output_numbers[3] = [x for x in unique_signal_values if len(x) == 5 and all([i in x for i in output_numbers[1]])][0]
+        unique_signal_values.remove(output_numbers[3])
+
+        output_numbers[6] = [x for x in unique_signal_values if len(x) == 6 and not all([i in x for i in output_numbers[1]])][0]
+        unique_signal_values.remove(output_numbers[6])
+
+        output_numbers[9] = [x for x in unique_signal_values if len(x) == 6 and all([i in x for i in output_numbers[4]])][0]
+        unique_signal_values.remove(output_numbers[9])
+
+        output_numbers[0] = [x for x in unique_signal_values if len(x) == 6][0]
+        unique_signal_values.remove(output_numbers[0])
+
+        # all segments of 5 are in 6
+        output_numbers[5] = [x for x in unique_signal_values if all([i in output_numbers[6] for i in x])][0]
+        unique_signal_values.remove(output_numbers[5])
+
+        output_numbers[2] = unique_signal_values.pop()
+
+        lookup = {v: k for k, v in output_numbers.items()}
+        output = int("".join([str(lookup[x]) for x in output_values]))
+        total += output
+
+    return total
+
+
 if __name__ == "__main__":
     d1_1 = d1([int(x) for x in open("inputs/d1.txt").readlines() if x], 1)
     print("1.1:", d1_1)  # 1553
@@ -344,3 +398,11 @@ if __name__ == "__main__":
     d7_2 = d7_2([int(x) for x in open("inputs/d7.txt").read().split(",")])
     print("7.2:", d7_2)
     assert d7_2 == 100727924
+
+    d8_1 = d8_1(open('inputs/d8.txt').readlines())
+    print("8.1:", d8_1)
+    assert d8_1 == 445
+
+    d8_2 = d8_2(open('inputs/d8.txt').readlines())
+    print("8.2:", d8_2)
+    assert d8_2 == 1043101
