@@ -1,3 +1,6 @@
+import math
+
+
 def d1(depths: list[str], window: int = 3) -> int:
     count = 0
     for x in range(1, len(depths) - window + 1):
@@ -291,18 +294,21 @@ def d8_1(inputs):
     c = 0
     unique_lengths = [2, 3, 4, 7]
     for i in inputs:
-        output_values = i.split(' | ')[-1]
+        output_values = i.split(" | ")[-1]
         outputs = output_values.split()
         for o in outputs:
             if len(o) in unique_lengths:
                 c += 1
     return c
 
+
 def d8_2(inputs):
     total = 0
     for i in inputs:
-        unique_signal_values, output_values = i.split(' | ')
-        unique_signal_values = ["".join(sorted(x)) for x in unique_signal_values.split()]
+        unique_signal_values, output_values = i.split(" | ")
+        unique_signal_values = [
+            "".join(sorted(x)) for x in unique_signal_values.split()
+        ]
         output_values = ["".join(sorted(x)) for x in output_values.split()]
 
         output_numbers = {
@@ -315,20 +321,34 @@ def d8_2(inputs):
         for v in output_numbers.values():
             unique_signal_values.remove(v)
 
-        output_numbers[3] = [x for x in unique_signal_values if len(x) == 5 and all([i in x for i in output_numbers[1]])][0]
+        output_numbers[3] = [
+            x
+            for x in unique_signal_values
+            if len(x) == 5 and all([i in x for i in output_numbers[1]])
+        ][0]
         unique_signal_values.remove(output_numbers[3])
 
-        output_numbers[6] = [x for x in unique_signal_values if len(x) == 6 and not all([i in x for i in output_numbers[1]])][0]
+        output_numbers[6] = [
+            x
+            for x in unique_signal_values
+            if len(x) == 6 and not all([i in x for i in output_numbers[1]])
+        ][0]
         unique_signal_values.remove(output_numbers[6])
 
-        output_numbers[9] = [x for x in unique_signal_values if len(x) == 6 and all([i in x for i in output_numbers[4]])][0]
+        output_numbers[9] = [
+            x
+            for x in unique_signal_values
+            if len(x) == 6 and all([i in x for i in output_numbers[4]])
+        ][0]
         unique_signal_values.remove(output_numbers[9])
 
         output_numbers[0] = [x for x in unique_signal_values if len(x) == 6][0]
         unique_signal_values.remove(output_numbers[0])
 
         # all segments of 5 are in 6
-        output_numbers[5] = [x for x in unique_signal_values if all([i in output_numbers[6] for i in x])][0]
+        output_numbers[5] = [
+            x for x in unique_signal_values if all([i in output_numbers[6] for i in x])
+        ][0]
         unique_signal_values.remove(output_numbers[5])
 
         output_numbers[2] = unique_signal_values.pop()
@@ -338,6 +358,67 @@ def d8_2(inputs):
         total += output
 
     return total
+
+
+def d9_get_surrounds(row, col, rows):
+    directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]  # up  # down  # right  # left
+
+    surrounds = []
+    for row_delta, col_delta in directions:
+        ny = row + row_delta
+        nx = col + col_delta
+
+        if ny >= 0 and nx >= 0 and nx < len(rows[0]) and ny < len(rows):
+            surrounds.append((rows[ny][nx], ny, nx))
+
+    return surrounds
+
+
+def d9_low_points(rows):
+    low_points = []
+    for y, row in enumerate(rows):
+        for x, c in enumerate(row):
+            surrounds = d9_get_surrounds(y, x, rows)
+
+            if all([s[0] > c for s in surrounds if s]):
+                low_points.append((c, y, x))
+
+    return low_points
+
+
+def d9_add_surrounds_to_basin(row, col, basin_points, rows):
+    surrounds = d9_get_surrounds(row, col, rows)
+
+    for value, row, col in surrounds:
+        if value != "9" and (row, col) not in basin_points:
+            basin_points.append((row, col))
+            basin_points = d9_add_surrounds_to_basin(row, col, basin_points, rows)
+
+    return basin_points
+
+
+def d9_1(rows):
+    rows = [x.strip() for x in rows if x]
+    low_points = d9_low_points(rows)
+    return sum([int(x[0]) + 1 for x in low_points])
+
+
+def d9_2(rows):
+    rows = [x.strip() for x in rows if x]
+
+    low_points = d9_low_points(rows)
+    basins = []
+
+    for c, row, col in low_points:
+        # fill the basin
+        basin_points = []
+        basin_points.append((row, col))
+
+        basin_points = d9_add_surrounds_to_basin(row, col, basin_points, rows)
+        basins.append(basin_points)
+
+    basin_lengths = sorted([len(b) for b in basins], reverse=True)
+    return math.prod(basin_lengths[:3])
 
 
 if __name__ == "__main__":
@@ -399,10 +480,18 @@ if __name__ == "__main__":
     print("7.2:", d7_2)
     assert d7_2 == 100727924
 
-    d8_1 = d8_1(open('inputs/d8.txt').readlines())
+    d8_1 = d8_1(open("inputs/d8.txt").readlines())
     print("8.1:", d8_1)
     assert d8_1 == 445
 
-    d8_2 = d8_2(open('inputs/d8.txt').readlines())
+    d8_2 = d8_2(open("inputs/d8.txt").readlines())
     print("8.2:", d8_2)
     assert d8_2 == 1043101
+
+    d9_1 = d9_1(open("inputs/d9.txt").readlines())
+    print("9.1:", d9_1)
+    assert d9_1 == 506
+
+    d9_2 = d9_2(open("inputs/d9.txt").readlines())
+    print("9.2:", d9_2)
+    assert d9_2 == 931200
